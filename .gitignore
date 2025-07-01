@@ -1,6 +1,10 @@
 # Node modules
 **/node_modules/
 
+#environment files
+.env
+.env.*
+
 # Logs
 logs
 *.log
@@ -30,4 +34,16 @@ __pycache__/
 
 # Frontend coverage
 coverage/
+frontend/.env
+frontend/dist/
+frontend/node_modules/
 node_modules/
+venv/
+
+#backend
+backend/*.sqlite3
+backend/.env
+backend/__pycache__/
+backend/instance/
+build/
+dist/

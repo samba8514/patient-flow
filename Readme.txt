@@ -25,3 +25,12 @@ psql -U pfuser -h localhost -d patientflow
 SELECT * FROM "user";
 
 ________________________________________________________________
+Frontend how to start
+
+export FLASK_APP=backend.main
+flask shell
+
+from models import db
+db.create_all()
+
+________________________________________________________________

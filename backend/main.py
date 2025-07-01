@@ -3,10 +3,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from models import db, User, Task, Patient
 from utils import admin_required
-
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://pfuser:pfpass123@localhost/patientflow'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-secret')
+app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://pfuser:pfpass123@localhost/patientflow'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 CORS(app)
