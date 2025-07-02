@@ -1,5 +1,6 @@
 flask
 flask_sqlalchemy
+falsk-socketio
 psycopg2-binary
 werkzeug
 flask-cors

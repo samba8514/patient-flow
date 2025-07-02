@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import PatientTable from './PatientTable';
 import AddPatientDialog from './AddPatientDialog';
 import FilterControls from './FilterControls';
+import { io } from "socket.io-client";
 
 export interface Patient {
   id: string;
@@ -16,11 +17,15 @@ export interface Patient {
   deadline: number;
 }
 
+// 👇 Setup socket.io connection
+const socket = io(import.meta.env.VITE_API_URL);
+
 const PatientTaskTracker = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  // Fetch patients once on load
   useEffect(() => {
     const fetchPatients = async () => {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/patients`);
@@ -28,6 +33,17 @@ const PatientTaskTracker = () => {
       setPatients(data);
     };
     fetchPatients();
+  }, []);
+
+  // 👇 Real-time update via socket
+  useEffect(() => {
+    socket.on('patient_added', (newPatient: Patient) => {
+      setPatients((prev) => [...prev, newPatient]);
+    });
+
+    return () => {
+      socket.off('patient_added');
+    };
   }, []);
 
   const updatePatientStatus = (patientId: string, field: keyof Patient, value: boolean) => {
@@ -42,6 +58,7 @@ const PatientTaskTracker = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, deadline })
     });
+    // ⚠️ No need to manually update state — the `socket.on` will handle it
   };
 
   const filteredPatients = patients.filter(patient => {

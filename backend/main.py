@@ -3,6 +3,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from models import db, User, Task, Patient
 from utils import admin_required
+from flask_socketio import SocketIO, emit
+
+
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -10,15 +13,15 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-secret')
 app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://pfuser:pfpass123@localhost/patientflow'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 CORS(app)
 db.init_app(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
 def index():
-    return '✅ Flask backend is running'
+    return 'Flask backend is running'
 
 
 @app.route('/login', methods=['POST'])
@@ -36,22 +39,6 @@ def login():
             }
         })
     return jsonify({'error': 'Invalid credentials'}), 401
-
-
-#@app.route('/api/tasks')
-#def get_tasks():
-#    username = request.args.get('username')
-#    user = User.query.filter_by(username=username).first()
-#    if not user:
-#        return jsonify([])
-
-#    tasks = Task.query.filter_by(user_id=user.id).all()
-#    return jsonify([{
-#        'id': task.id,
-#        'patient_name': task.patient_name,
-#        'status': task.status,
-#    } for task in tasks])
-
 
 
 @app.route('/api/patients', methods=['GET'])
@@ -77,10 +64,20 @@ def add_patient():
     )
     db.session.add(new_patient)
     db.session.commit()
-    return jsonify({'message': 'Patient added'}), 201
+
+    socketio.emit('patient_added', {
+        'id': new_patient.id,
+        'name': new_patient.name,
+        'deadline': new_patient.deadline,
+        'startedWork': new_patient.started_work,
+        'imageSent': new_patient.image_sent,
+        'materialReceived': new_patient.material_received,
+        'reportCompleted': new_patient.report_completed,
+        'reviewPending': new_patient.review_pending
+    })
+    return jsonify({'status': 'ok'})
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    socketio.run(app, debug=True)
 
