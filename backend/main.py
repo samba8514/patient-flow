@@ -48,11 +48,11 @@ def get_patients():
         'id': p.id,
         'name': p.name,
         'deadline': p.deadline,
-        'startedWork': p.started_work,
-        'imageSent': p.image_sent,
-        'materialReceived': p.material_received,
-        'reportCompleted': p.report_completed,
-        'reviewPending': p.review_pending
+        'started_work': p.started_work,
+        'image_sent': p.image_sent,
+        'material_received': p.material_received,
+        'report_completed': p.report_completed,
+        'review_pending': p.review_pending
     } for p in patients])
 
 @app.route('/api/patients', methods=['POST'])
@@ -69,13 +69,26 @@ def add_patient():
         'id': new_patient.id,
         'name': new_patient.name,
         'deadline': new_patient.deadline,
-        'startedWork': new_patient.started_work,
-        'imageSent': new_patient.image_sent,
-        'materialReceived': new_patient.material_received,
-        'reportCompleted': new_patient.report_completed,
-        'reviewPending': new_patient.review_pending
+        'started_work': new_patient.started_work,
+        'image_sent': new_patient.image_sent,
+        'material_received': new_patient.material_received,
+        'report_completed': new_patient.report_completed,
+        'review_pending': new_patient.review_pending
     })
     return jsonify({'status': 'ok'})
+
+@app.route('/api/patients/<int:patient_id>', methods=['PUT'])
+def update_patient(patient_id):
+    data = request.json
+    patient = Patient.query.get_or_404(patient_id)
+
+    for field in ['started_work', 'image_sent', 'material_received', 'report_completed', 'review_pending']:
+        if field in data:
+            setattr(patient, field, data[field])
+
+    db.session.commit()
+    socketio.emit('patient_updated', patient.to_dict())  # optional real-time update
+    return jsonify({'message': 'Patient updated'})
 
 
 if __name__ == '__main__':

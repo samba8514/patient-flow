@@ -9,11 +9,11 @@ import { io } from "socket.io-client";
 export interface Patient {
   id: string;
   name: string;
-  startedWork: boolean;
-  imageSent: boolean;
-  materialReceived: boolean;
-  reportCompleted: boolean;
-  reviewPending: boolean;
+  started_work: boolean;
+  image_sent: boolean;
+  material_received: boolean;
+  report_completed: boolean;
+  review_pending: boolean;
   deadline: number;
 }
 
@@ -46,11 +46,27 @@ const PatientTaskTracker = () => {
     };
   }, []);
 
-  const updatePatientStatus = (patientId: string, field: keyof Patient, value: boolean) => {
-    setPatients(patients.map(patient =>
-      patient.id === patientId ? { ...patient, [field]: value } : patient
-    ));
+const updatePatientStatus = async (patientId: string, field: keyof Patient, value: boolean) => {
+  const updatedField = {
+    [field]: value
   };
+
+  try {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedField)
+    });
+
+    setPatients(prev =>
+      prev.map(patient =>
+        patient.id === patientId ? { ...patient, [field]: value } : patient
+      )
+    );
+  } catch (error) {
+    console.error('Failed to update patient:', error);
+  }
+};
 
   const addPatient = async (name: string, deadline: number) => {
     await fetch(`${import.meta.env.VITE_API_URL}/api/patients`, {
@@ -58,14 +74,14 @@ const PatientTaskTracker = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, deadline })
     });
-    // ⚠️ No need to manually update state — the `socket.on` will handle it
+    // No need to manually update state — the `socket.on` will handle it
   };
 
   const filteredPatients = patients.filter(patient => {
     if (statusFilter === 'all') return true;
     if (statusFilter === 'urgent') return patient.deadline <= 2;
-    if (statusFilter === 'completed') return patient.reportCompleted && patient.reviewPending;
-    if (statusFilter === 'pending') return !patient.reportCompleted || !patient.reviewPending;
+    if (statusFilter === 'completed') return patient.report_completed && patient.review_pending;
+    if (statusFilter === 'pending') return !patient.report_completed || !patient.review_pending;
     return true;
   });
 

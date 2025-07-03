@@ -83,41 +83,41 @@ const PatientTable: React.FC<PatientTableProps> = ({ patients, updatePatientStat
               </td>
               <td className="py-4 px-4 text-center">
                 <StatusIcon
-                  isCompleted={patient.startedWork}
+                  isCompleted={patient.started_work}
                   patientId={patient.id}
-                  field="startedWork"
+                  field="started_work"
                   updateStatus={updatePatientStatus}
                 />
               </td>
               <td className="py-4 px-4 text-center">
                 <StatusIcon
-                  isCompleted={patient.imageSent}
+                  isCompleted={patient.image_sent}
                   patientId={patient.id}
-                  field="imageSent"
+                  field="image_sent"
                   updateStatus={updatePatientStatus}
                 />
               </td>
               <td className="py-4 px-4 text-center">
                 <StatusIcon
-                  isCompleted={patient.materialReceived}
+                  isCompleted={patient.material_received}
                   patientId={patient.id}
-                  field="materialReceived"
+                  field="material_received"
                   updateStatus={updatePatientStatus}
                 />
               </td>
               <td className="py-4 px-4 text-center">
                 <StatusIcon
-                  isCompleted={patient.reportCompleted}
+                  isCompleted={patient.report_completed}
                   patientId={patient.id}
-                  field="reportCompleted"
+                  field="report_completed"
                   updateStatus={updatePatientStatus}
                 />
               </td>
               <td className="py-4 px-4 text-center">
                 <StatusIcon
-                  isCompleted={patient.reviewPending}
+                  isCompleted={patient.review_pending}
                   patientId={patient.id}
-                  field="reviewPending"
+                  field="review_pending"
                   updateStatus={updatePatientStatus}
                 />
               </td>

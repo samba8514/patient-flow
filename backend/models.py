@@ -18,13 +18,24 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('tasks', lazy=True))
 
-
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
     deadline = db.Column(db.Integer, nullable=False)
     started_work = db.Column(db.Boolean, default=False)
     image_sent = db.Column(db.Boolean, default=False)
     material_received = db.Column(db.Boolean, default=False)
     report_completed = db.Column(db.Boolean, default=False)
     review_pending = db.Column(db.Boolean, default=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'deadline': self.deadline,
+            'started_work': self.started_work,
+            'image_sent': self.image_sent,
+            'material_received': self.material_received,
+            'report_completed': self.report_completed,
+            'review_pending': self.review_pending
+        }
