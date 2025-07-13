@@ -32,6 +32,16 @@ __pycache__/
 .venv/
 *.sqlite3
 
+# Python Virtual Environment (all possible directory names)
+venv/
+env/
+bin/
+lib/
+lib64/
+include/
+pyvenv.cfg
+share/
+
 # Frontend coverage
 coverage/
 frontend/.env
@@ -45,5 +55,13 @@ backend/*.sqlite3
 backend/.env
 backend/__pycache__/
 backend/instance/
+# Backend virtual environment directories
+backend/bin/
+backend/lib/
+backend/lib64/
+backend/lib64
+backend/include/
+backend/share/
+backend/pyvenv.cfg
 build/
 dist/

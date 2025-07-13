@@ -14,13 +14,24 @@ export interface Patient {
   material_received: boolean;
   report_completed: boolean;
   review_pending: boolean;
-  deadline: number;
+  deadline_date: string;  // ISO date string
+  days_remaining: number;  // Dynamic calculation
+  deadline_status: 'overdue' | 'urgent' | 'warning' | 'normal';  // Status for styling
+  updated_by?: string;
+}
+
+interface PatientTaskTrackerProps {
+  user: {
+    username: string;
+    role: string;
+  };
+  onLogout: () => void;
 }
 
 // 👇 Setup socket.io connection
 const socket = io(import.meta.env.VITE_API_URL);
 
-const PatientTaskTracker = () => {
+const PatientTaskTracker = ({ user, onLogout }: PatientTaskTrackerProps) => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -48,7 +59,8 @@ const PatientTaskTracker = () => {
 
 const updatePatientStatus = async (patientId: string, field: keyof Patient, value: boolean) => {
   const updatedField = {
-    [field]: value
+    [field]: value,
+    updated_by: user.username // Use the actual logged-in user
   };
 
   try {
@@ -60,7 +72,7 @@ const updatePatientStatus = async (patientId: string, field: keyof Patient, valu
 
     setPatients(prev =>
       prev.map(patient =>
-        patient.id === patientId ? { ...patient, [field]: value } : patient
+        patient.id === patientId ? { ...patient, [field]: value, updated_by: user.username } : patient
       )
     );
   } catch (error) {
@@ -72,14 +84,18 @@ const updatePatientStatus = async (patientId: string, field: keyof Patient, valu
     await fetch(`${import.meta.env.VITE_API_URL}/api/patients`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, deadline })
+      body: JSON.stringify({ 
+        name, 
+        deadline,
+        updated_by: user.username // Use the actual logged-in user
+      })
     });
     // No need to manually update state — the `socket.on` will handle it
   };
 
   const filteredPatients = patients.filter(patient => {
     if (statusFilter === 'all') return true;
-    if (statusFilter === 'urgent') return patient.deadline <= 2;
+    if (statusFilter === 'urgent') return patient.days_remaining <= 2;
     if (statusFilter === 'completed') return patient.report_completed && patient.review_pending;
     if (statusFilter === 'pending') return !patient.report_completed || !patient.review_pending;
     return true;
@@ -93,7 +109,17 @@ const updatePatientStatus = async (patientId: string, field: keyof Patient, valu
             <CardTitle className="text-3xl font-bold text-gray-800">
               Patient Task Tracker
             </CardTitle>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">
+                Logged in as: <strong>{user.username}</strong>
+              </span>
+              <Button
+                onClick={onLogout}
+                variant="outline"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                Logout
+              </Button>
               <FilterControls 
                 statusFilter={statusFilter} 
                 setStatusFilter={setStatusFilter}
